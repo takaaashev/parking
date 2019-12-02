@@ -1,0 +1,73 @@
+package letscode.parking;
+
+import org.apache.http.client.HttpClient;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
+
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+
+import javax.net.ssl.SSLContext;
+
+@RestController
+public class AuthorizationController
+{
+    private static HashMap<String, String> users = new HashMap<>();// список пользователей с логинами (login/пароль)
+
+    static // временный статический блок кода для инициализации пользователей/ролей
+    {
+        users.put("user1", "password1");
+        users.put("user2", "password2");
+    }
+
+    // @PostMapping - значит для http метода post.
+    // /login  - адрес метода, т.е. http://localhost:8080/login
+    // public String loginUser(@RequestBody AuthenticationInfo authenticationInfo)   - тут  String - это тип данных
+    // которые будешь возвращать( id сессии или сообщ об ошибке). loginUser - прост название метода.
+    // @RequestBody AuthenticationInfo authenticationInfo - значит на вход данные будут читаться из body в ожидая тип
+    // AuthenticationInfo. authenticationInfo - это переменная метода, куда автоматом запишется то что пришло в body
+    // - её можно использовать в методе
+    @PostMapping("/login")
+    public String loginUser(@RequestBody AuthenticationInfo authenticationInfo)
+    {
+        if (authenticationInfo == null || authenticationInfo.getLogin() == null || authenticationInfo.getPassword() == null)
+        {
+            return "неверный формат данных";
+        }
+        String login = authenticationInfo.getLogin();
+        String password = authenticationInfo.getPassword();
+        if (users.containsKey(login))// проверяем есть ли юзер с таким логином
+        {
+            if (users.get(login)
+                     .equals(password))//чекаем его пароль
+            {
+                return "тут прописать логику создания сессии ...";
+            }
+            else
+            {
+                return "пароль не верный";
+            }
+        }
+        else
+        {
+            return "пользователь с таким логином не найден";
+        }
+    }
+}
